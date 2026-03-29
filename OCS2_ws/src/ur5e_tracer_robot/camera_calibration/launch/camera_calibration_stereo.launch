@@ -1,0 +1,12 @@
+<launch>
+    <node pkg="camera_calibration" type="cameracalibrator.py" args="--size 8x6 --square 0.0245 --no-service-check" name="camera_calib_stereo" output="screen" >
+        <remap from="left" to="/left_cam/image_raw"/>
+        <remap from="right" to="/right_cam/image_raw"/>
+        <remap from="left_camera" to="/left_cam"/>
+        <remap from="right_camera" to="/right_cam"/>
+      --no-service-check
+    </node>
+</launch>
+
+
+

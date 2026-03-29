@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="camera_calibration" type="cameracalibrator.py" args="--size 7x6 --square 0.01 --no-service-check" name="camera_calib" output="screen" >
+        <remap from="image" to="/camera/rgb/image_raw"/>
+        <remap from="camera" to="/camera"/>
+      --no-service-check
+    </node>
+</launch>
+

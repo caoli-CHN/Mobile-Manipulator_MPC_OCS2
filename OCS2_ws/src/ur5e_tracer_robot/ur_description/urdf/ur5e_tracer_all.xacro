@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="ur5e_robot_all">
+  <!-- 添加移动机械臂所需的各个部件 -->
+  <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro" />    <!-- 添加深度相机——D435 -->
+  <xacro:include filename="$(find realsense_ros_gazebo)/xacro/depthcam.xacro"/>        <!-- gazebo中添加相机内的视野图 -->
+  <xacro:include filename="$(find connector_description)/urdf/robotiq_realsense2_connector.urdf.xacro" />   <!-- 添加夹爪与相机的连接件 -->
+  <xacro:include filename="$(find robotiq_description)/urdf/robotiq_85_gripper.urdf.xacro" />   <!-- 添加夹爪——robotiq_85 -->
+  <xacro:include filename="$(find gazebo_ur_description)/urdf/inc/ur5e_macro.xacro" />   <!-- 添加UR5e -->
+  <xacro:include filename="$(find controller)/urdf/controller.xacro" />       <!-- 添加UR5e控制箱 -->
+  <xacro:include filename="$(find second_base)/urdf/second_base.xacro" />   <!-- 添加钢板 -->
+  <xacro:include filename="$(find aluminium)/urdf/aluminium.xacro" />       <!-- 添加移动底盘和钢板之间的支撑铝管 -->
+  <xacro:include filename="$(find aluminium)/urdf/aluminium_2.xacro" />
+  <xacro:include filename="$(find aluminium)/urdf/aluminium_3.xacro" />
+  <xacro:include filename="$(find aluminium)/urdf/aluminium_4.xacro" />
+  <xacro:include filename="$(find tracer_description)/urdf/tracer_v1.xacro" />   <!-- 添加移动底盘——Tracer -->
+
+
+  <!-- 连接bese_link和tracer -->
+  <link name="base_link" />
+  <joint name="tracer_base_link_2_base_link" type="fixed">
+    <parent link="base_link" />
+    <child link="tracer_base_link" />
+    <origin xyz="0 0 0.1425" rpy="0 0 0" />
+  </joint>
+  
+
+  <!-- 连接tracer和四根支撑铝管 -->
+  <joint name="tracer_aluminium" type="fixed">
+    <origin xyz="-0.142 0.115 0.016 " rpy="0 0 0" />
+    <parent link="tracer_base_link" />
+    <child link="aluminium_base_link" />
+  </joint>
+
+  <joint name="tracer_aluminium_2" type="fixed">
+    <origin xyz="-0.142 -0.115 0.016 " rpy="0 0 0" />
+    <parent link="tracer_base_link" />
+    <child link="aluminium_2_base_link" />
+  </joint>
+
+  <joint name="tracer_aluminium_3" type="fixed">
+    <origin xyz="0.145 0.115 0.016 " rpy="0 0 0" />
+    <parent link="tracer_base_link" />
+    <child link="aluminium_3_base_link" />
+  </joint>
+
+  <joint name="tracer_aluminium_4" type="fixed">
+    <origin xyz="0.145 -0.115 0.016 " rpy="0 0 0" />
+    <parent link="tracer_base_link" />
+    <child link="aluminium_4_base_link" />
+  </joint>
+
+
+  <!-- 连接tracer和铝板 -->
+  <joint name="tracer_base" type="fixed">
+    <origin xyz="0.05 0 0.218 " rpy="0 0 0" />
+    <parent link="tracer_base_link" />
+    <child link="urbase_base_link" />
+  </joint>
+
+
+  <!-- 连接铝板和UR5e -->
+  <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
+  <xacro:ur5e_robot prefix="" transmission_hw_interface="$(arg transmission_hw_interface)"/> 
+  <joint name="base_ur" type="fixed">
+    <origin xyz="0 0 0 " rpy="0 0 0" />
+    <parent link="urbase_base_link" />
+    <child link="ur5e_base_link" />
+  </joint>
+
+
+  <!-- 连接铝板和UR5e控制箱 -->
+  <joint name="base_controller" type="fixed">
+    <origin xyz="-0.205 0.017 0 " rpy="0 0 0" />
+    <parent link="urbase_base_link" />
+    <child link="controller_base_link" />
+  </joint>
+
+
+  <!-- 连接UR5e和夹爪 -->
+  <link name="robotiq_coupler">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotiq_description/meshes/robotiq_85_coupler.stl" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotiq_description/meshes/robotiq_85_coupler.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.073e-05   1.45286e-03  -1.1049e-03" rpy="0 0 0" />
+      <mass value="0.168" />
+      <inertia ixx="6.69695624e-05" ixy="5.21511788e-09" ixz="-2.74383009e-08"
+        iyy="7.85088161e-05" iyz="5.41105193e-07" izz="1.41819717e-04" />
+    </inertial>
+  </link>
+
+  <gazebo reference="robotiq_coupler">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <joint name="robotiq_coupler_joint" type="fixed">
+    <origin xyz="0.004 0 0 " rpy="-1.57 0 -1.57" />
+    <parent link="tool0" />
+    <child link="robotiq_coupler" />
+  </joint>
+
+  <xacro:robotiq_85_gripper parent="robotiq_coupler" prefix="">   <!-- 夹爪宏调用，将robotiq_85_gripper和robotiq_coupler合成关节 -->
+    <origin xyz="0 0 0.005" rpy="0 -1.57 1.57" />
+  </xacro:robotiq_85_gripper>
+
+  <link name="robotiq_85_gripper" />    <!-- 添加夹爪的工具坐标系 -->
+  <joint name="robotiq_85_base_link_2_gripper" type="fixed">
+    <parent link="robotiq_85_base_link"/>
+    <child link="robotiq_85_gripper"/>
+    <origin rpy="0 0 0" xyz="0.13 0 0"/>
+  </joint>
+
+
+  <!-- 连接夹爪和转换件 -->
+  <xacro:robotiq_realsense2_connector prefix="" parent="robotiq_85_base_link"> <!-- 夹爪宏调用，将robotiq_realsense2_connector和robotiq_85_base_link合成关节 -->
+    <origin xyz="0.0365 0 0.028" rpy="0 0 0" />
+  </xacro:robotiq_realsense2_connector>
+
+
+  <!-- 连接转换件和D435 -->
+  <xacro:sensor_d435 parent="connector_to_d435_link" name="camera_d435">  <!-- 相机宏调用，将sensor_d435和connector_to_d435_link合成关节 -->
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:sensor_d435>
+
+  <!-- gazebo中添加D435i -->
+  <xacro:realsense_d435 sensor_name="d435" parent_link="connector_to_d435_link" rate="10">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:realsense_d435>
+
+</robot>
